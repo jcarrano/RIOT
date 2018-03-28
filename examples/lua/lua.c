@@ -1,8 +1,44 @@
 /*
-** $Id: lua.c,v 1.230 2017/01/12 17:14:26 roberto Exp $
-** Lua stand-alone interpreter
-** See Copyright Notice in lua.h
-*/
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
+
+/******************************************************************************
+* Copyright (C) 1994-2017 Lua.org, PUC-Rio.
+*
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to
+* the following conditions:
+*
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+******************************************************************************/
+
+/**
+ * @ingroup     examples
+ * @{
+ *
+ * @file
+ * @brief       Implementation of lua and run_lua_script shell commands. Adapted
+ *              from Lua standalone interpreter.
+ *
+ * @author      Daniel Petry <daniel.petry@fu-berlin.de>
+ *
+ * @}
+ */
 
 #define lua_c
 
@@ -302,8 +338,7 @@ static int incomplete (lua_State *L, int status) {
 ** Prompt the user, read a line, and push it into the Lua stack.
 */
 static int pushline (lua_State *L, int firstline) {
-  char buffer[LUA_MAXINPUT];
-  char *b = buffer;
+  char b[LUA_MAXINPUT];
   size_t l;
   const char *prmt = get_prompt(L, firstline);
   int readstatus = lua_readline(L, b, prmt);
@@ -621,4 +656,3 @@ int lua_main (int argc, char **argv) {
   lua_close(L);
   return (result && status == LUA_OK) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-

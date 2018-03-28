@@ -19,7 +19,7 @@ USEMODULE += shell
 USEMODULE += shell_commands
 
 ifneq ($(BOARD),native)
-# This stack size is large enough to run Lua print() functions of 
+# This stack size is large enough to run Lua print() functions of
 # various lengths. Other functions untested.
 CFLAGS += -DTHREAD_STACKSIZE_MAIN=4096
 endif
@@ -28,7 +28,7 @@ USEPKG += lua
 
 include $(RIOTBASE)/Makefile.include
 
-# The code below generates a header file from any .lua scripts in the 
+# The code below generates a header file from any .lua scripts in the
 # example directory. The header file contains a byte array of the
 # ASCII characters in the .lua script.
 

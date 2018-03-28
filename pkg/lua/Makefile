@@ -5,7 +5,7 @@ PKG_LICENSE=MIT
 
 .PHONY: all
 
-all: 
+all:
 #	The lower case "makefile" is so that it copies over the lua makefile
 	@cp Makefile.lua $(PKG_BUILDDIR)/makefile
 	"$(MAKE)" -C $(PKG_BUILDDIR)
