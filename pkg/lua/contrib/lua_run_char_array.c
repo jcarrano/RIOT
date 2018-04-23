@@ -32,7 +32,7 @@
  * @{
  *
  * @file        lua_run_char_array.c
- * @brief       Implementation of lua_run_char_array,  which runs a char array 
+ * @brief       Implementation of lua_run_char_array,  which runs a char array
  *              as a lua script.
  *
  * @author      Daniel Petry <daniel.petry@fu-berlin.de>
