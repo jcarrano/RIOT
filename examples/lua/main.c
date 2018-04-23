@@ -37,7 +37,6 @@ int lua_run_main_script(int argc, char **argv)
 }
 
 static const shell_command_t shell_commands[] = {
-    { "lua", "Start a Lua prompt", lua_main},
     { "run_lua_script", "Run main.lua", lua_run_main_script},
     { NULL, NULL, NULL }
 };
