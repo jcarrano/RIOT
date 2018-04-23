@@ -28,12 +28,12 @@
 ******************************************************************************/
 
 /**
- * @ingroup     examples
+ * @ingroup     pkg
  * @{
  *
- * @file
- * @brief       Implementation of lua and run_lua_script shell commands. Adapted
- *              from Lua standalone interpreter.
+ * @file        lua_run_char_array.c
+ * @brief       Implementation of lua_run_char_array,  which runs a char array 
+ *              as a lua script.
  *
  * @author      Daniel Petry <daniel.petry@fu-berlin.de>
  *
@@ -45,13 +45,9 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-#if !defined(LUA_PROGNAME)
-#define LUA_PROGNAME		"lua"
-#endif
-
 static lua_State *globalL = NULL;
 
-static const char *progname = LUA_PROGNAME;
+static const char *progname = "lua";
 
 
 /*
@@ -143,7 +139,7 @@ static int dochunk (lua_State *L, int status) {
 }
 
 
-int lua_handle_buffer(const char *buffer, size_t buffer_len ){
+int lua_run_char_array (char *buffer, size_t buffer_len ){
   int status;
   lua_State *L = luaL_newstate();  /* create state */
   luaL_checkversion(L);

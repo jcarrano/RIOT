@@ -14,7 +14,7 @@ file using the lua_run_script command.
 
 ### How to run
 
-Type `make flash term
+Type `make flash term`
 
 Note: you may have to press `RESET` on the board (after the flash) if the board
 reboots faster than the terminal program can start..

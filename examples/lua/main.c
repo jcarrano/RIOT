@@ -26,14 +26,14 @@
 #include "main.lua.h"
 
 extern int lua_main(int argc, char **argv);
-extern int lua_handle_buffer(const char *buffer, size_t buffer_len);
+extern int lua_run_char_array(const char *buffer, size_t buffer_len);
 
 int lua_run_main_script(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
 
-    return lua_handle_buffer(main_lua, main_lua_len);
+    return lua_run_char_array(main_lua, main_lua_len);
 }
 
 static const shell_command_t shell_commands[] = {
