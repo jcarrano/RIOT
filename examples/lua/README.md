@@ -9,8 +9,10 @@ Currently, the only actual function available is "print"
 ### How to use
 
 Put your lua code into "main.lua" (check the example). The file will
-automatically be included when compiling the application. You can then execute the
-file using the lua_run_script command.
+be included in your application as an ASCII byte array. This is done in the
+last 20 or so lines of the example's Makefile.
+
+The script will then be run immediately after RIOT has started up.
 
 ### How to run
 

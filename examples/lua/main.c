@@ -19,34 +19,17 @@
  */
 
 #include <stdio.h>
-
-#include "msg.h"
 #include "shell.h"
 
 #include "main.lua.h"
 
-extern int lua_main(int argc, char **argv);
 extern int lua_run_char_array(const char *buffer, size_t buffer_len);
-
-int lua_run_main_script(int argc, char **argv)
-{
-    (void)argc;
-    (void)argv;
-
-    return lua_run_char_array(main_lua, main_lua_len);
-}
-
-static const shell_command_t shell_commands[] = {
-    { "run_lua_script", "Run main.lua", lua_run_main_script},
-    { NULL, NULL, NULL }
-};
 
 int main(void)
 {
     puts("Lua RIOT build");
 
-    char line_buf[SHELL_DEFAULT_BUFSIZE];
-    shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
+    lua_run_char_array(main_lua, main_lua_len);
 
     return 0;
 }
