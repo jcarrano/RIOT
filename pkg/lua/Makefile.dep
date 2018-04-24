@@ -1,0 +1,4 @@
+ifneq (,$(filter lua,$(USEPKG)))
+  USEPKG += tlsf
+  USEMODULE += lua-contrib
+endif

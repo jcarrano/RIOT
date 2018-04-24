@@ -1,4 +1,4 @@
-SRC := $(filter-out lua.c luac.c,$(wildcard *.c))
+SRC := $(filter-out loadlib.c lua.c luac.c,$(wildcard *.c))
 
 # This builds using POSIX system calls and some extra libraries, and
 # removes a compiler warning that warns against using tmpnam().
