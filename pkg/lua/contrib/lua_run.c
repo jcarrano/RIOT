@@ -28,6 +28,8 @@
 
 #include "lua.h"
 #include "lualib.h"
+#include "lauxlib.h"
+
 #include "lua_run.h"
 #include "lua_loadlib.h"
 
@@ -95,9 +97,9 @@ LUALIB_API int luaR_openlibs(lua_State *L, uint16_t modmask)
 
     for (lib_index = 0; lib_index < LUAR_LOAD_O_ALL;
          lib_index++, modmask >>= 1) {
-        luaL_Reg lib = loadedlibs[lib_index];
+        const luaL_Reg *lib = loadedlibs + lib_index;
 
-        if (!(modmask | 1)) {
+        if (!(modmask & 1)) {
             continue;
         }
         /* TODO: how can the loading fail? */
@@ -115,7 +117,7 @@ LUALIB_API int luaR_openlibs(lua_State *L, uint16_t modmask)
  */
 NORETURN static int _jump_back (lua_State *L)
 {
-    jmp_buf *jump_buffer = *lua_getextraspace(L);
+    jmp_buf *jump_buffer = *(jmp_buf **)lua_getextraspace(L);
 
     /* FIXME: I dont think it's OK to print a message */
     lua_writestringerror("PANIC: unprotected error in call to Lua API (%s)\n",
@@ -123,9 +125,7 @@ NORETURN static int _jump_back (lua_State *L)
 
     /* TODO: try to return some info about the error object. */
 
-    longjmp(&jump_buffer, 1);
-
-    return 0; /* dead code */
+    longjmp(*jump_buffer, 1);
 }
 
 static int luaR_do_module_or_buf(const char *buf, size_t buflen,
@@ -156,7 +156,7 @@ static int luaR_do_module_or_buf(const char *buf, size_t buflen,
      *
      * lua_getextraspace() is therefore a pointer to a pointer to jump_buffer.
      */
-    *lua_getextraspace(L) = &jump_buffer;
+    *(jmp_buf **)lua_getextraspace(L) = &jump_buffer;
 
     tmp_retval = luaR_openlibs(L, modmask);
     if (tmp_retval != LUAR_LOAD_O_ALL) {
@@ -167,10 +167,13 @@ static int luaR_do_module_or_buf(const char *buf, size_t buflen,
     if (buf == NULL) {
         compilation_result = luaR_getloader(L, modname);
     } else {
-        compilation_result = luaL_loadbufferx(L, buf, buflen, modname);
+        compilation_result = luaL_loadbufferx(L, buf, buflen, modname, "t");
     }
 
     switch (compilation_result) {
+    case LUAR_MODULE_NOTFOUND:
+        status = LUAR_NOMODULE;
+        goto luaR_do_error;
     case LUA_ERRSYNTAX:
         status = LUAR_COMPILE_ERR;
         goto luaR_do_error;

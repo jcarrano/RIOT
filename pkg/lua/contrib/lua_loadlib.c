@@ -37,18 +37,27 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+#include "binsearch.h"
+
 #include "lua_builtin.h"
+#include "lua_loadlib.h"
 
 #define LUAR_MAX_MODULE_NAME 64
-#define LUAR_MODULE_NOTFOUND 50
 
 /* Avoid compilation errors where there are no external modules defined */
 /* FIXME: this should be adapted to work with all compilers */
 #define WEAK __attribute__((weak))
 
-const struct luaR_builtin_lua luaR_builtin_lua_table[0] WEAK = {};
+static const struct luaR_builtin_lua _luaR_builtin_lua_table[1];
+const struct luaR_builtin_lua *const luaR_builtin_lua_table WEAK
+                                                = _luaR_builtin_lua_table;
+
 const size_t luaR_builtin_lua_table_len WEAK = 0;
-const struct luaR_builtin_c luaR_builtin_c_table[0] WEAK = {};
+
+static const struct luaR_builtin_c _luaR_builtin_c_table[1];
+const struct luaR_builtin_c *const luaR_builtin_c_table WEAK
+                                                = _luaR_builtin_c_table;
+
 const size_t luaR_builtin_c_table_len WEAK = 0;
 
 /* ======================== 'searchers' functions =========================== */
@@ -68,9 +77,8 @@ static int _ll_searcher_builtin_lua(lua_State *L, const char *name)
             lua_pushstring(L, name);    /* will be 2nd argument to module */
         }
 
-        return load_result
-    }
-    else {
+        return load_result;
+    } else {
         return LUAR_MODULE_NOTFOUND;
     }
 }
@@ -109,8 +117,7 @@ static int _ll_searcher_builtin_c(lua_State *L, const char *name)
         lua_pushcfunction(L, cmodule->luaopen);
         lua_pushstring(L, name);    /* will be 2nd argument to module */
         return LUA_OK;
-    }
-    else {
+    } else {
         return LUAR_MODULE_NOTFOUND;
     }
 }
@@ -138,11 +145,10 @@ int luaR_getloader(lua_State *L, const char *name)
 {
     int load_result;
 
-    lua_pushstring(L, name);
-    load_result = _ll_searcher_builtin_lua(L);
+    load_result = _ll_searcher_builtin_lua(L, name);
 
     if (load_result == LUAR_MODULE_NOTFOUND) {
-        load_result = _ll_searcher_builtin_c(L);
+        load_result = _ll_searcher_builtin_c(L, name);
     }
 
     return load_result;

@@ -56,9 +56,10 @@ enum LUAR_LOAD_ORDER {
     LUAR_LOAD_O_OS,
     LUAR_LOAD_O_STRING,
     LUAR_LOAD_O_MATH,
+    LUAR_LOAD_O_UTF8,
     LUAR_LOAD_O_DEBUG,
     LUAR_LOAD_O_ALL,
-}
+};
 
 /** Load the base globals (_G) */
 #define LUAR_LOAD_BASE      LUAR_LOAD_FLAG(LUAR_LOAD_O_BASE)
@@ -76,6 +77,8 @@ enum LUAR_LOAD_ORDER {
 #define LUAR_LOAD_STRING    LUAR_LOAD_FLAG(LUAR_LOAD_O_STRING)
 /** Load ´math´ */
 #define LUAR_LOAD_MATH      LUAR_LOAD_FLAG(LUAR_LOAD_O_MATH)
+/** Load ´utf8´ */
+#define LUAR_LOAD_UTF8      LUAR_LOAD_FLAG(LUAR_LOAD_O_UTF8)
 /** Load ´debug´ */
 #define LUAR_LOAD_DEBUG     LUAR_LOAD_FLAG(LUAR_LOAD_O_DEBUG)
 
@@ -93,7 +96,7 @@ enum LUAR_ERRORS {
     LUAR_NOMODULE,      /** The specified module could not be found. */
     LUAR_COMPILE_ERR,   /** The Lua code failed to compile. */
     LUAR_RUNTIME_ERR,   /** Error in code execution. */
-    LUAR_MEMORY_ERR.    /** Lua could not allocate enough memory */
+    LUAR_MEMORY_ERR,    /** Lua could not allocate enough memory */
     LUAR_INTERNAL_ERR   /** Error inside the Lua VM.
                          *  Right now, if this happens, you may leak memory from
                          *  the heap. If your program is the only one using the

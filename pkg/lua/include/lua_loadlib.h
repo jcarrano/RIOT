@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+#define LUAR_MODULE_NOTFOUND 50
+
 /**
  * Load a module as a chunk.
  *
