@@ -26,7 +26,7 @@ USEPKG += lua
 
 include $(RIOTBASE)/Makefile.include
 
-# The code below generates a header file from any .lua scripts in the 
+# The code below generates a header file from any .lua scripts in the
 # example directory. The header file contains a byte array of the
 # ASCII characters in the .lua script.
 

@@ -37,7 +37,7 @@ int lua_run_script (const char *buffer, size_t buffer_len ){
     luaL_openlibs(L);
 
     luaL_loadbuffer(L, buffer, buffer_len, "lua input script");
-  
+
     if (lua_pcall(L, 0, 0, 0) != LUA_OK){
         puts("Lua script running failed");
         return EXIT_FAILURE;
