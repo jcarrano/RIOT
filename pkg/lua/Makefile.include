@@ -1,7 +1,1 @@
 INCLUDES += -I$(PKGDIRBASE)/lua
-
-ifneq (,$(filter lua_contrib,$(USEMODULE)))
-  DIRS += $(RIOTPKG)/lua/contrib
-endif
-
-include $(RIOTPKG)/lua/Makefile.lua.parse

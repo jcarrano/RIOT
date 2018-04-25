@@ -25,3 +25,27 @@ endif
 USEPKG += lua
 
 include $(RIOTBASE)/Makefile.include
+
+# The code below generates a header file from any .lua scripts in the 
+# example directory. The header file contains a byte array of the
+# ASCII characters in the .lua script.
+
+LUA_PATH := $(BINDIR)/lua
+
+# add directory of generated *.lua.h files to include path
+CFLAGS += -I$(LUA_PATH)
+
+# generate .lua.h header files of .lua files
+LUA = $(wildcard *.lua)
+
+LUA_H := $(LUA:%.lua=$(LUA_PATH)/%.lua.h)
+
+$(LUA_PATH)/:
+	@mkdir -p $@
+
+$(LUA_H): | $(LUA_PATH)/
+$(LUA_H): $(LUA_PATH)/%.lua.h: %.lua
+
+	xxd -i $< | sed 's/^unsigned/const/g' > $@
+
+$(RIOTBUILD_CONFIG_HEADER_C): $(LUA_H)

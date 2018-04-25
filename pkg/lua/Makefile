@@ -7,7 +7,6 @@ PKG_BUILDDIR ?= $(BINDIRBASE)/pkg/$(BOARD)/$(PKG_NAME)
 .PHONY: all
 
 all:
-#	The lower case "makefile" is so that it copies over the lua makefile
 	@cp Makefile.lua $(PKG_BUILDDIR)
 	"$(MAKE)" -C $(PKG_BUILDDIR) -f Makefile.lua
 

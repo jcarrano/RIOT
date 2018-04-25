@@ -19,17 +19,40 @@
  */
 
 #include <stdio.h>
-#include "shell.h"
+#include <stdlib.h>
+#include "lauxlib.h"
+#include "lualib.h"
 
 #include "main.lua.h"
 
-extern int lua_run_char_array(const char *buffer, size_t buffer_len);
+int lua_run_script (const char *buffer, size_t buffer_len ){
+
+    lua_State *L = luaL_newstate();
+
+    if (L == NULL) {
+        puts("cannot create state: not enough memory");
+        return EXIT_FAILURE;
+    }
+
+    luaL_openlibs(L);
+
+    luaL_loadbuffer(L, buffer, buffer_len, "lua input script");
+  
+    if (lua_pcall(L, 0, 0, 0) != LUA_OK){
+        puts("Lua script running failed");
+        return EXIT_FAILURE;
+    }
+
+    lua_close(L);
+
+    return EXIT_SUCCESS;
+}
 
 int main(void)
 {
     puts("Lua RIOT build");
 
-    lua_run_char_array(main_lua, main_lua_len);
+    lua_run_script(main_lua, main_lua_len);
 
     return 0;
 }
