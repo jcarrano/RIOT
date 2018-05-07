@@ -133,7 +133,7 @@ static int luaR_do_module_or_buf(const char *buf, size_t buflen,
                             uint16_t modmask, int *retval)
 {
     jmp_buf jump_buffer;
-    lua_State *L;
+    volatile lua_State *L = NULL;
     volatile int tmp_retval = 0; /* we need to make it volatile because of the
                                     setjmp/longjmp */
     int status = LUAR_EXIT, compilation_result;
@@ -203,6 +203,10 @@ static int luaR_do_module_or_buf(const char *buf, size_t buflen,
     tmp_retval = lua_tonumber (L, 1);
 
 luaR_do_error:
+
+    if (L != NULL) {
+        lua_close(L);
+    }
 
     if (retval != NULL) {
         *retval = tmp_retval;
