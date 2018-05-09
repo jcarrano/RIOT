@@ -48,7 +48,7 @@ clock_t _times(struct tms *ptms)
     return 0;
 }
 
-#define MAIN_LUA_MEM_SIZE (8192*3)
+#define MAIN_LUA_MEM_SIZE (20000)
 
 char lua_memory[MAIN_LUA_MEM_SIZE] __attribute__ ((aligned (__BIGGEST_ALIGNMENT__)));
 
@@ -56,8 +56,6 @@ char lua_memory[MAIN_LUA_MEM_SIZE] __attribute__ ((aligned (__BIGGEST_ALIGNMENT_
 
 int main(void)
 {
-    //tlsf_add_global_pool(lua_memory, sizeof(lua_memory));
-
     printf("%p - %p %u\n", lua_memory, lua_memory+MAIN_LUA_MEM_SIZE, sizeof(void*));
 
     while (1) {
