@@ -1,4 +1,4 @@
-APPLICATION = lua
+APPLICATION = lua_repl
 
 # If no BOARD is found in the environment, use this default:
 BOARD ?= native
