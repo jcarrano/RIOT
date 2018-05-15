@@ -24,30 +24,6 @@
 #include "lua_run.h"
 #include "repl.lua.h"
 
-/* FIXME: this should be moved to sys/newlib. There is a PR in progress. */
-
-#include <sys/times.h>
-#include <string.h>
-#include <errno.h>
-#include <reent.h>
-
-int _link_r(struct _reent *ptr, const char *old_name, const char *new_name)
-{
-    (void)old_name;
-    (void)new_name;
-
-    ptr->_errno = ENOSYS;
-
-    return -1;
-}
-
-clock_t _times(struct tms *ptms)
-{
-    memset(ptms, 0, sizeof(*ptms));
-
-    return 0;
-}
-
 #define MAIN_LUA_MEM_SIZE (20000)
 
 char lua_memory[MAIN_LUA_MEM_SIZE] __attribute__ ((aligned (__BIGGEST_ALIGNMENT__)));
