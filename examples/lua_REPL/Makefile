@@ -19,9 +19,8 @@ QUIET ?= 1
 # This is a lot of stack, should be fixed in the future.
 CFLAGS += -DTHREAD_STACKSIZE_MAIN=8000 -DDEBUG_ASSERT_VERBOSE -DLUA_DEBUG
 
-# USEMODULE += tlsf-malloc
 USEPKG += lua
-#USEMODULE += newlib
+USEMODULE += newlib
 
 include $(RIOTBASE)/Makefile.include
 
