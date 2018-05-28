@@ -19,45 +19,37 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
+#include <errno.h>
 #include "lauxlib.h"
 #include "lualib.h"
 
-#include "lua_run.h"
-
 #include "main.lua.h"
 
-#define LUA_MEM_SIZE (8192*4)
-static char lua_mem[LUA_MEM_SIZE];
+int lua_run_script(const char *buffer, size_t buffer_len)
+{
 
-int lua_run_script (const char *buffer, size_t buffer_len ){
-
-    lua_State *L = luaR_newstate(lua_mem, sizeof(lua_mem), NULL);
+    lua_State *L = luaL_newstate();
 
     if (L == NULL) {
         puts("cannot create state: not enough memory");
-        return EXIT_FAILURE;
+        return ENOMEM;
     }
 
     luaL_openlibs(L);
-
     luaL_loadbuffer(L, buffer, buffer_len, "lua input script");
 
     if (lua_pcall(L, 0, 0, 0) != LUA_OK){
         puts("Lua script running failed");
-        return EXIT_FAILURE;
+        return EINTR;
     }
 
     lua_close(L);
-
-    return EXIT_SUCCESS;
+    return 0;
 }
 
 int main(void)
 {
     puts("Lua RIOT build");
-
     lua_run_script(main_lua, main_lua_len);
-
     return 0;
 }
