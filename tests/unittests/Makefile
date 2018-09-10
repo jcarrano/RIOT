@@ -58,6 +58,7 @@ BOARD_INSUFFICIENT_MEMORY := airfy-beacon \
                              samd21-xpro \
                              samr21-xpro \
                              seeeduino_arch-pro \
+                             sensebox_samd21 \
                              slstk3401a \
                              sltb001a \
                              slwstk6220a \
@@ -268,6 +269,3 @@ ifeq (, $(UNIT_TESTS))
 else
   CFLAGS += -DTEST_SUITES='$(subst $() $(),$(charCOMMA),$(UNIT_TESTS:tests-%=%))'
 endif
-
-test:
-	./tests/01-run.py
