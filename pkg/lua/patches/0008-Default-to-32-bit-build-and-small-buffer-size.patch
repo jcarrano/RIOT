@@ -1,7 +1,7 @@
 From a3bb3e20c12dd7436fe4c3ec4c4f09b98ed0c443 Mon Sep 17 00:00:00 2001
 From: Juan Carrano <j.carrano@fu-berlin.de>
 Date: Tue, 29 May 2018 11:55:49 +0200
-Subject: [PATCH 8/8] Default to 32 bit build and small buffer size.
+Subject: [PATCH 8/9] Default to 32 bit build and small buffer size.
 
 Set the word length and buffer size in luaconf.h so that it doesn't have to
 be specified in the compiler's command line each time.
@@ -37,5 +37,5 @@ index e816db00..8093833d 100644
  
  #endif
 -- 
-2.17.1
+2.18.0
 

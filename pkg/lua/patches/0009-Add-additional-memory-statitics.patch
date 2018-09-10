@@ -1,0 +1,102 @@
+From cc54134dd7e32d866c28d0ff7beff12d8f765020 Mon Sep 17 00:00:00 2001
+From: Juan Carrano <j.carrano@fu-berlin.de>
+Date: Mon, 13 Aug 2018 17:37:13 +0200
+Subject: [PATCH 9/9] Add additional memory statitics.
+
+A new function in the test module "memstats" allows breaking down
+memory usage per datatype.
+---
+ ltests.c | 40 ++++++++++++++++++++++++++++++++++++++++
+ ltests.h |  4 +++-
+ 2 files changed, 43 insertions(+), 1 deletion(-)
+
+diff --git a/ltests.c b/ltests.c
+index 3ca77d2c..7180c851 100644
+--- a/ltests.c
++++ b/ltests.c
+@@ -95,6 +95,7 @@ static void freeblock (Memcontrol *mc, Header *block) {
+     for (i = 0; i < MARKSIZE; i++)  /* check marks after block */
+       lua_assert(*(cast(char *, block + 1) + size + i) == MARK);
+     mc->objcount[block->d.type]--;
++    mc->objtotal[block->d.type] -= size;
+     fillmem(block, sizeof(Header) + size + MARKSIZE);  /* erase block */
+     mc->alloc_f(mc->alloc_ud, block, size, 0);  /* actually free block */
+     mc->numblocks--;  /* update counts */
+@@ -153,6 +154,7 @@ static void *debug_realloc (void *ud, void *b, size_t oldsize, size_t size) {
+       mc->maxmem = mc->total;
+     mc->numblocks++;
+     mc->objcount[type]++;
++    mc->objtotal[type] += size;
+     return newblock + 1;
+   }
+ }
+@@ -596,6 +598,43 @@ static int mem_query (lua_State *L) {
+   }
+ }
+ 
++static void mktriple(lua_State *L, const char *c, unsigned long a, unsigned long b) {
++  lua_createtable(L, 2, LUA_NUMTAGS);
++
++  lua_pushstring(L, c);
++  lua_seti(L, -2, 1);
++  lua_pushinteger(L, a);
++  lua_seti(L, -2, 2);
++  lua_pushinteger(L, b);
++  lua_seti(L, -2, 3);
++}
++
++/**
++ * Get a breakdown of memory usage per type of object.
++ *
++ * @return  Table containing typename: {count, size} where count is the number
++ *          of blocks and size the total allocated size of all blocks.
++ */
++static int memstats(lua_State *L) {
++  unsigned long objcount[LUA_NUMTAGS];
++  unsigned long objtotal[LUA_NUMTAGS];
++  int tag_n;
++
++  /* Take a snapshot so that running the objects created by this function do
++   * not affect the result.
++   */
++  memcpy(objcount, get_memcontrol(L)->objcount, sizeof(objcount));
++  memcpy(objtotal, get_memcontrol(L)->objtotal, sizeof(objtotal));
++
++  lua_createtable(L, LUA_NUMTAGS, 1);
++
++  for (tag_n = 0; tag_n < LUA_NUMTAGS; tag_n++) {
++    mktriple(L, ttypename(tag_n), objcount[tag_n], objtotal[tag_n]);
++    lua_seti(L, -2, tag_n);
++  }
++
++  return 1;
++}
+ 
+ static int settrick (lua_State *L) {
+   if (ttisnil(obj_at(L, 1)))
+@@ -1541,6 +1580,7 @@ static const struct luaL_Reg tests_funcs[] = {
+   {"testC", testC},
+   {"makeCfunc", makeCfunc},
+   {"totalmem", mem_query},
++  {"memstats", memstats},
+   {"trick", settrick},
+   {"udataval", udataval},
+   {"unref", unref},
+diff --git a/ltests.h b/ltests.h
+index 8e10670b..414b4ebb 100644
+--- a/ltests.h
++++ b/ltests.h
+@@ -58,7 +58,9 @@ typedef struct Memcontrol {
+   unsigned long total;
+   unsigned long maxmem;
+   unsigned long memlimit;
+-  unsigned long objcount[LUA_NUMTAGS];
++  unsigned long objcount[LUA_NUMTAGS]; /* number of objects of each type */
++  unsigned long objtotal[LUA_NUMTAGS]; /* memory used by all object of each type
++                                        sum of elements must be equal to 'total' */
+ } Memcontrol;
+ 
+ /*
+-- 
+2.18.0
+
