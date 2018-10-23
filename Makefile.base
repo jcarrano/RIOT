@@ -67,12 +67,10 @@ $(BINDIR)/$(MODULE)/:
 
 $(BINDIR)/$(MODULE).a $(OBJ): | $(BINDIR)/$(MODULE)/
 
-relpath = $(shell realpath --relative-to=$(abspath .) $(1))
-
 $(BINDIR)/$(MODULE).a: $(OBJ) | $(DIRS:%=ALL--%)
 	@# Recreate archive to cleanup deleted/non selected source files objects
 	$(Q)$(RM) $@
-	$(Q)$(AR) $(ARFLAGS) $(foreach f,$(abspath $@ $^),$(call relpath,$f))
+	$(Q)$(AR) $(ARFLAGS) $(foreach f,$(abspath $@ $^),$(call relpath,$(abspath .),$f))
 
 CXXFLAGS = $(filter-out $(CXXUWFLAGS), $(CFLAGS)) $(CXXEXFLAGS)
 CCASFLAGS = $(filter-out $(CCASUWFLAGS), $(CFLAGS)) $(CCASEXFLAGS)
@@ -98,6 +96,9 @@ $(ASMOBJ): $(BINDIR)/$(MODULE)/%.o: %.s
 
 $(ASSMOBJ): $(BINDIR)/$(MODULE)/%.o: %.S $(RIOTBUILD_CONFIG_HEADER_C)
 	$(Q)$(CCAS) $(CCASFLAGS) $(INCLUDES) -MD -MP -c -o $@ $(abspath $<)
+
+# Include utility library
+include $(RIOTMAKE)/utils.inc.mk
 
 # pull in dependency info for *existing* .o files
 # deleted header files will be silently ignored

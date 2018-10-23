@@ -83,3 +83,5 @@ test-relpath-negtive:
 	echo $(call relpath,/,/)
 	echo $(call relpath,/1/2/3,/1/2/3)
 
+# Return a path relative to the current directory
+relpath_here = $(call relpath,$(abspath .),$(abspath $(1)))
