@@ -471,6 +471,9 @@ BASELIB_ARCHECKS = $(patsubst %.a,%.a-check,$(filter %.a,$(BASELIBS)))
 %.a-check: %.a
 	$(Q)$(AR) t $(call relpath_here,$<) 2>&1 | grep '^/' | '$(LAZYSPONGE)' $(LAZYSPONGE_FLAGS) '$@'
 
+# There's no point on keeping files whose content is later copied to another file
+.INTERMEDIATE: $(BASELIB_ARCHECKS)
+
 ARCHIVE_CHECK = $(BINDIR)/$(APPLICATION).archive-check
 
 $(ARCHIVE_CHECK): $(BASELIB_ARCHECKS)
@@ -485,10 +488,13 @@ archive-check: $(ARCHIVE_CHECK) FORCE
 	@if [ -s '$<' ] ; then \
 		$(COLOR_ECHO) '$(COLOR_RED)Found the following absolute paths in archives' ;\
 		cat '$<';\
+		$(COLOR_ECHO) '$(COLOR_RESET)' ;\
+		exit 1;\
 	elif [ -f '$<' ] ; then \
-		$(COLOR_ECHO) '$(COLOR_GREEN)Archives correctly formed' ;\
+		$(COLOR_ECHO) '$(COLOR_GREEN)Archives correctly formed$(COLOR_RESET)' ;\
 	else \
-		$(COLOR_ECHO) '$(COLOR_RED)Unexpected error (file not found)' ;\
+		$(COLOR_ECHO) '$(COLOR_RED)Unexpected error (file not found)$(COLOR_RESET)' ;\
+		exit 1;\
 	fi
 endif # BUILD_IN_DOCKER
 
