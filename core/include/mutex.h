@@ -13,8 +13,9 @@
  * @ingroup     core
  * @details
  *
- * A mutex in RIOT can be unlocked by any thread and not just the one that
- * locked it.  This can be used to construct other synchronization devices.
+ * A mutex in RIOT can be unlocked by any thread or ISR and not just the one
+ * that locked it.  This can be used to construct other synchronization
+ * devices.
  *
  * @{
  *
