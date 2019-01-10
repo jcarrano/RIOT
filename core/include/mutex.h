@@ -11,6 +11,11 @@
  * @defgroup    core_sync Synchronization
  * @brief       Mutex for thread synchronization
  * @ingroup     core
+ * @details
+ *
+ * A mutex in RIOT can be unlocked by any thread and not just the one that
+ * locked it.  This can be used to construct other synchronization devices.
+ *
  * @{
  *
  * @file
@@ -106,12 +111,6 @@ static inline int mutex_trylock(mutex_t *mutex)
 /**
  * @brief Locks a mutex, blocking.
  *
- * Mutexes are served in FIFO order while respecting thread priority (i.e. a higher
- * priority thread will be unlocked before a lower priority one even if it arrived
- * later). As long as no thread holds the mutex indefinitely and as long as there
- * are no deadlocks, all same-priority threads blocked on mutex_lock() should
- * eventually unblock.
- *
  * @param[in] mutex Mutex object to lock. Has to be initialized first. Must not be NULL.
  */
 static inline void mutex_lock(mutex_t *mutex)
@@ -122,11 +121,10 @@ static inline void mutex_lock(mutex_t *mutex)
 /**
  * @brief Unlocks the mutex.
  *
- * One of the threads waiting on the mutex will be unblocked. For details on the
- * order in which mutexes are served see mutex_lock().
- *
- * A mutex in RIOT can be unlocked by any thread and not just the one that is
- * holding the mutex. This can be used to construct other synchronization devices.
+ * One of the threads waiting on the mutex will be unblocked. Threads waiting
+ * on a mutex are served based on priority, then FIFO. I.e., a higher priority
+ * thread will be unlocked before a lower priority one even if it arrived
+ * later.
  *
  * @param[in] mutex Mutex object to unlock, must not be NULL.
  */
