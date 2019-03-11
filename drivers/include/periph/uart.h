@@ -51,6 +51,7 @@
 #include <stdint.h>
 #include <limits.h>
 
+#include "mutex.h"
 #include "periph_cpu.h"
 #include "periph_conf.h"
 /* TODO: remove once all platforms are ported to this interface */
@@ -96,6 +97,9 @@ typedef void(*uart_rx_cb_t)(void *arg, uint8_t data);
 typedef struct {
     uart_rx_cb_t rx_cb;     /**< data received interrupt callback */
     void *arg;              /**< argument to both callback routines */
+    const uint8_t *tx_data;       /**< Buffer of data waiting to be sent */
+    size_t tx_pending;      /**< Number of bytes waiting in tx_data buffer */
+    mutex_t uart_busy;      /**< Locked while a transfer is in progress */
 } uart_isr_ctx_t;
 #endif
 

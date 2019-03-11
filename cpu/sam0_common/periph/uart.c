@@ -25,6 +25,7 @@
 
 #include "cpu.h"
 
+#include "mutex.h"
 #include "periph/uart.h"
 #include "periph/gpio.h"
 
@@ -111,6 +112,9 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
             dev(uart)->CTRLB.reg |= SERCOM_USART_CTRLB_SFDE;
         }
     }
+
+    mutex_init(&uart_ctx[uart].uart_busy);
+
     while (dev(uart)->SYNCBUSY.bit.CTRLB) {}
 
     /* and finally enable the device */
@@ -119,13 +123,32 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
     return UART_OK;
 }
 
+void uart_write_async(uart_t uart, const uint8_t *data, size_t len)
+{
+    /* the unlocking is done in the ISR */
+    mutex_lock(&uart_ctx[uart].uart_busy);
+
+    /** It is a BUG if there is still unsent data or if the interrupt is
+        still enabled. */
+    assert(!dev(uart)->INTENSET.bit.DRE);
+    assert(!uart_ctx[uart].tx_pending);
+
+    if (len) {
+        uart_ctx[uart].tx_data = data;
+        uart_ctx[uart].tx_pending = len;
+
+        dev(uart)->INTENSET.reg = SERCOM_USART_INTENSET_DRE;
+    }
+    else {
+        mutex_unlock(&uart_ctx[uart].uart_busy);
+    }
+}
+
 void uart_write(uart_t uart, const uint8_t *data, size_t len)
 {
-    for (size_t i = 0; i < len; i++) {
-        while (!dev(uart)->INTFLAG.bit.DRE) {}
-        dev(uart)->DATA.reg = data[i];
-    }
-    while (!dev(uart)->INTFLAG.bit.TXC) {}
+    uart_write_async(uart, data, len);
+    /* This ensures the write finishes before we exit. */
+    uart_write_async(uart, NULL, 0);
 }
 
 void uart_poweron(uart_t uart)
@@ -142,12 +165,32 @@ void uart_poweroff(uart_t uart)
 
 static inline void irq_handler(unsigned uartnum)
 {
-    if (dev(uartnum)->INTFLAG.bit.RXC) {
+    SERCOM_USART_INTFLAG_Type flags = dev(uartnum)->INTFLAG;
+
+    if (flags.bit.RXC) {
         /* interrupt flag is cleared by reading the data register */
         uart_ctx[uartnum].rx_cb(uart_ctx[uartnum].arg,
                                 (uint8_t)(dev(uartnum)->DATA.reg));
     }
-    else if (dev(uartnum)->INTFLAG.bit.ERROR) {
+
+    /* if DRE is enabled without pending data it is a BUG!!! */
+    assert(dev(uartnum)->INTENSET.bit.DRE? uart_ctx[uartnum].tx_pending: 1);
+
+    if (flags.bit.DRE && uart_ctx[uartnum].tx_pending) {
+        dev(uartnum)->DATA.reg = *uart_ctx[uartnum].tx_data++;
+        uart_ctx[uartnum].tx_pending--;
+
+        if (!uart_ctx[uartnum].tx_pending) {
+            dev(uartnum)->INTENCLR.reg = SERCOM_USART_INTENCLR_DRE;
+            /* We are ready with this block of data, unlock any waiting
+               uart_write. */
+            /* The lock must be locked during writing, so it is
+               as BUG if it is not locked now */
+            assert(mutex_trylock(&uart_ctx[uartnum].uart_busy)==0);
+            mutex_unlock(&uart_ctx[uartnum].uart_busy);
+        }
+    }
+    if (flags.bit.ERROR) {
         /* clear error flag */
         dev(uartnum)->INTFLAG.reg = SERCOM_USART_INTFLAG_ERROR;
     }
