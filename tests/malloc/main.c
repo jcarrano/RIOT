@@ -23,6 +23,7 @@
  */
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -71,6 +72,9 @@ static int _strtoi(char *str, int *val)
     return *end_char != '\0';
 }
 
+static const char result_ok[] = "{ 'result' : 'SUCCESS' }";
+static const char result_fail[] = "{ 'result' : 'ERROR' }";
+
 static int cmd_malloc(int argc, char *argv[])
 {
     size_t requested_size;
@@ -79,14 +83,18 @@ static int cmd_malloc(int argc, char *argv[])
     if (argc != 2 || _strtoz(argv[1], &requested_size)) {
         puts("Usage: malloc <alloc_size>");
         puts("Allocate a block of size <alloc_size>. <alloc_size> can be decimal or hex");
-        puts("Output: 'malloc: <result of malloc> <requested_size>'");
+        puts("Output: {'action': 'malloc', 'addr':<result of malloc>, 'size':<requested_size>'}");
+        puts(result_fail);
         return 1;
     }
 
     result = malloc(requested_size);
-    printf("malloc: %p %d\n", result, requested_size);
+    printf("{'action': 'malloc',\n 'addr': %p,\n 'size': %d}\n",
+            result, requested_size);
 
-    return result != NULL? 0: 2;
+    puts(result_ok);
+
+    return 0;
 }
 
 /**
@@ -121,12 +129,15 @@ static int cmd_fill(int argc, char *argv[])
                          &block_address, &block_size, &block_contents) < 0) {
         puts("Set every byte of the block of memory of size <size>");
         puts("starting at <address> to <value>");
+        puts(result_fail);
         return 1;
     }
 
     memset((void*)block_address, block_contents, block_size);
 
-    puts("fill: ");
+    printf("{'action': 'fill',\n 'addr': %p,\n 'size': %d,\n 'value'=%u}\n",
+         (void*)block_address, block_size, block_contents);
+    puts(result_ok);
 
     return 0;
 }
@@ -138,12 +149,14 @@ static int cmd_check(int argc, char *argv[])
     int block_contents;
     unsigned int i;
     char *block;
+    bool check_ok = 1;
 
     if (_parse_fill_args(argc, argv,
                          &block_address, &block_size, &block_contents) < 0) {
         puts("Verify that every byte of the block of memory of size <size>");
         puts("starting at <address> has a value equal to <value>");
-        puts("Output: 'check: 1' if successful, 'check: 0' otherwise.");
+        puts("Output: 'result: 1' if successful, 'result: 0' otherwise.");
+        puts(result_fail);
         return 1;
     }
 
@@ -151,12 +164,14 @@ static int cmd_check(int argc, char *argv[])
 
     for (i = 0; i < block_size; i++) {
         if (block[i] != block_contents) {
-            puts("check: 0");
-            return 2;
+            check_ok = 0;
+            break;
         }
     }
 
-    puts("check: 1\n");
+    printf("{'action': 'check',\n 'addr': %p,\n 'size': %d,\n 'value'=%u\n, 'result': %d}\n",
+         (void*)block_address, block_size, block_contents, check_ok);
+    puts(result_ok);
 
     return 0;
 }
@@ -175,7 +190,9 @@ static int cmd_free(int argc, char *argv[])
 
     free((void *)block_address);
 
-    puts("free");
+    printf("{'action': 'free',\n 'addr': %p}\n", (void *)block_address);
+
+    puts(result_ok);
 
     return 0;
 }
@@ -193,14 +210,13 @@ static int cmd_realloc(int argc, char *argv[])
         puts("Usage: realloc <old_address> <new_size>");
         puts("Reallocate the block located at <old_address> so that the new size");
         puts("is <new_size>. The reallocation can result in the block being moved.");
-        puts("Output: 'realloc: <new_address>'");
         return 1;
     }
 
     new_address = realloc((void *)block_address, new_size);
-    printf("realloc: %p\n", new_address);
-
-    return new_address != NULL? 0: 2;
+    printf("{'action': 'realloc',\n 'addr': %p,\n 'new_addr': %p,\n 'new_size': %u}\n",
+         (void *)block_address, new_address, new_size);
+    return 0;
 }
 
 static const shell_command_t shell_commands[] = {
