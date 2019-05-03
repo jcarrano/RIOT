@@ -3,5 +3,17 @@ export CPU_FAM  = saml21
 
 USEMODULE += pm_layered
 
+ifneq (,$(filter saml21j18b saml21j18a samr30g18a,$(CPU_MODEL)))
+  LPSRAM_LEN ?= 0x2000
+endif
+
+# For saml21 cpu's we use the saml21.ld linker script
+export LINKFLAGS += -L$(RIOTCPU)/saml21/ldscripts
+LINKER_SCRIPT ?= saml21.ld
+
+ifneq (,$(LPSRAM_LEN))
+  LINKFLAGS += $(LINKFLAGPREFIX)--defsym=_lpsram_len=$(LPSRAM_LEN)
+endif
+
 include $(RIOTCPU)/sam0_common/Makefile.include
 include $(RIOTMAKE)/arch/cortexm.inc.mk
