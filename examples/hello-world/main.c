@@ -20,13 +20,29 @@
  */
 
 #include <stdio.h>
+#include "xtimer.h"
+
+/* use chars to test the alignment */
+static char counter __attribute__((section(".backup.data"))) = 8;
+static char counter_zero __attribute__((section(".backup.bss")));
+static char counter_noinit __attribute__((section(".backup.noinit")));
 
 int main(void)
 {
     puts("Hello World!");
 
-    printf("You are running RIOT on a(n) %s board.\n", RIOT_BOARD);
-    printf("This board features a(n) %s MCU.\n", RIOT_MCU);
+    printf("counter value, %d\n", counter);
+    printf("counter_zero value, %d\n", counter_zero);
+    printf("counter_noinit value, %d\n", counter_noinit);
+
+    while (1) {
+        printf("You are running RIOT on a(n) %s board.\n", RIOT_BOARD);
+        printf("This board features a(n) %s MCU.\n", RIOT_MCU);
+        printf("counter value, %d\n", counter++);
+        printf("counter_zero value, %d\n", counter_zero++);
+        printf("counter_noinit value, %d\n", counter_noinit++);
+        xtimer_sleep(1);
+    }
 
     return 0;
 }
