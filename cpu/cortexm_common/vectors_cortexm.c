@@ -54,6 +54,14 @@ extern uint32_t _sstack;
 extern uint32_t _estack;
 extern uint8_t _sram;
 extern uint8_t _eram;
+
+/* Support for LPRAM. */
+/* FIXME: wrap in #ifdefs!!!! */
+extern const uint32_t _sbackup_data_load[];
+extern uint32_t _sbackup_data[];
+extern uint32_t _ebackup_data[];
+extern uint32_t _sbackup_bss[];
+extern uint32_t _ebackup_bss[];
 /** @} */
 
 /**
@@ -78,7 +86,7 @@ __attribute__((weak)) void post_startup (void)
 void reset_handler_default(void)
 {
     uint32_t *dst;
-    uint32_t *src = &_etext;
+    const uint32_t *src = &_etext;
 
 #ifdef MODULE_PUF_SRAM
     puf_sram_init((uint8_t *)&_srelocate, SEED_RAM_LEN);
@@ -101,9 +109,24 @@ void reset_handler_default(void)
     for (dst = &_srelocate; dst < &_erelocate; ) {
         *(dst++) = *(src++);
     }
+
+    /* FIXME: ifdef this!!!! */
+    /* load low-power data section. */
+    for (dst = _sbackup_data, src = _sbackup_data_load;
+         dst < _ebackup_data;
+         dst++, src++) {
+        *dst = *src;
+    }
+
     /* default bss section to zero */
     for (dst = &_szero; dst < &_ezero; ) {
         *(dst++) = 0;
+    }
+
+    /* FIXME: ifdef this!!!! */
+    /* zero-out low-power bss. */
+    for (dst = _sbackup_bss; dst < _ebackup_bss; dst++) {
+        *dst = 0;
     }
 
 #ifdef MODULE_MPU_STACK_GUARD
