@@ -25,11 +25,30 @@ MEMORY
     lp-sram  : ORIGIN = 0x30000000, LENGTH = _lpsram_len
 }
 
+INCLUDE cortexm.ld
+
 SECTIONS
 {
-    .bkup : {
-        *(.backup)
+    _sbackup_data_load = LOADADDR(.backup.data);
+    .backup.data :  ALIGN(4) {
+        _sbackup_data = .;
+        *(.backup.data)
+        _ebackup_data = .;
+        /* Round size so that we can use 4 byte copy in init */
+        . = ALIGN(4);
+    } > lp-sram AT> rom
+
+    .backup.bss (NOLOAD) : ALIGN(4) {
+        _sbackup_bss = .;
+        *(.backup.bss)
+        _ebackup_bss = .;
+        /* Round size so that we can use 4 byte copy in init */
+        . = ALIGN(4);
+    } > lp-sram
+
+    .backup.noinit (NOLOAD) : {
+        _sbackup_noinit = .;
+        *(.backup.noinit)
+        _ebackup_noinit = .;
     } > lp-sram
 }
-
-INCLUDE cortexm.ld
